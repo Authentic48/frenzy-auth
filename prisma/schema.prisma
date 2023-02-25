@@ -10,7 +10,63 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Test {
-  uuid String @id @default(uuid())
-  name String
+model User {
+  uuid            String    @id @default(uuid()) @db.VarChar(36)
+  phone           String    @unique
+  password        String
+  status          Status    @default(ACTIVE)
+  roles           Role[]
+  sessions        Session[]
+  isPhoneVerified Boolean   @default(false) @map("is_phone_verified")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@map("user")
+}
+
+model Role {
+  uuid     String   @id @default(uuid()) @db.VarChar(36)
+  name     RoleEnum @default(USER)
+  userUUID String   @map("user_uuid") @db.VarChar(36)
+  user     User     @relation(fields: [userUUID], references: [uuid])
+
+  @@map("role")
+}
+
+model Session {
+  uuid         String               @id @default(uuid()) @db.VarChar(36)
+  user         User                 @relation(fields: [userUUID], references: [uuid], onDelete: Cascade)
+  userUUID     String               @map("user_uuid") @db.VarChar(36)
+  deviceUUID   String               @unique @map("device_uuid") @db.VarChar(36)
+  refreshToken String               @unique @map("refresh_token") @db.VarChar(200)
+  tokens       SessionAccessToken[]
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  expiredAt    DateTime             @map("expired_at")
+
+  @@index([deviceUUID])
+  @@map("session")
+}
+
+model SessionAccessToken {
+  uuid            String   @id @default(uuid()) @db.VarChar(36)
+  sessionUUID     String   @map("session_uuid") @db.VarChar(36)
+  session         Session  @relation(fields: [sessionUUID], references: [uuid], onDelete: Cascade)
+  accessTokenUUID String   @map("access_token_uuid") @db.VarChar(100)
+  createdAt       DateTime @default(now()) @map("created_at")
+  expiredAt       DateTime @map("expired_at")
+
+  @@index([accessTokenUUID, sessionUUID])
+  @@map("session_access_token")
+}
+
+enum RoleEnum {
+  USER
+  ADMIN
+  MANAGER
+}
+
+enum Status {
+  ACTIVE
+  BLOCKED
 }
