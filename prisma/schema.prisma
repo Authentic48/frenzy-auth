@@ -13,15 +13,25 @@ datasource db {
 model User {
   uuid            String    @id @default(uuid()) @db.VarChar(36)
   phone           String    @unique
-  password        String
   status          Status    @default(ACTIVE)
   roles           Role[]
   sessions        Session[]
   isPhoneVerified Boolean   @default(false) @map("is_phone_verified")
+  otp             Otp?
   createdAt       DateTime  @default(now()) @map("created_at")
   updatedAt       DateTime  @updatedAt @map("updated_at")
 
   @@map("user")
+}
+
+model Otp {
+  uuid      String   @id @default(uuid()) @db.VarChar(36)
+  password  String
+  userUUID  String   @unique @map("user_uuid") @db.VarChar(36)
+  user      User     @relation(fields: [userUUID], references: [uuid])
+  expiredAt DateTime @map("expired_at")
+
+  @@map("otp")
 }
 
 model Role {
