@@ -1,10 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
 import { IUserService } from './user';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserAlreadyExistException } from '../../libs/exceptions/user-already-exist.exception';
 import { RoleEnum } from '@prisma/client';
 import { ArgonService } from '../../libs/services/argon.service';
 import { generateOTP } from '../../libs/helpers/otp-generater.helper';
+import { addMinutes } from '../../libs/helpers/add-minutes.helper';
+import { ConfigService } from '@nestjs/config';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { RMQInternalServerError } from '../../libs/exceptions/rmq-internal-server.exception';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -12,6 +16,8 @@ export class UserService implements IUserService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly argon2: ArgonService,
+
+    private readonly configService: ConfigService,
   ) {}
   async createUser(phone: string) {
     try {
@@ -23,15 +29,21 @@ export class UserService implements IUserService {
 
       const oTP = generateOTP().toString();
 
-      const password = await this.argon2.hash(oTP);
-
       const newUser = await this.prisma.user.create({
         data: {
           phone,
-          password,
           roles: {
             create: {
               name: RoleEnum.USER,
+            },
+          },
+          otp: {
+            create: {
+              password: await this.argon2.hash(oTP),
+              expiredAt: addMinutes(
+                new Date(),
+                this.configService.get('OTP_LIFE_TIME'),
+              ),
             },
           },
         },
@@ -52,17 +64,23 @@ export class UserService implements IUserService {
   }
 
   async findUserByPhone(phone: string) {
-    return this.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { phone },
       select: {
         uuid: true,
         phone: true,
-        password: true,
+        otp: {
+          select: {
+            password: true,
+          },
+        },
       },
     });
+
+    return { uuid: user.uuid, phone: user.phone, password: user.otp.password };
   }
 
-  async verifyUserPhone(
+  async verifyUserPhoneAndDeleteOTP(
     userUUID: string,
   ): Promise<{ success: boolean | null }> {
     try {
@@ -70,13 +88,19 @@ export class UserService implements IUserService {
         where: { uuid: userUUID },
         data: {
           isPhoneVerified: true,
+          otp: {
+            delete: true,
+          },
         },
       });
 
       return { success: true };
     } catch (e) {
       this.logger.error(e);
-      // TODO Handle error
+      if (e instanceof PrismaClientKnownRequestError && e.code === 'P2025') {
+        throw new ForbiddenException();
+      }
+      throw new RMQInternalServerError();
     }
   }
 }
