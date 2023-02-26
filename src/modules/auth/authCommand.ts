@@ -13,7 +13,7 @@ export class AuthCommand {
   }
 
   @RMQRoute(AuthRouteTopics.REGISTER_VERIFY_OTP)
-  async registerVerifyOTP({ phone, otp }: { phone: string; otp: string }) {
-    return this.authService.registerVerifyOTP(phone, otp);
+  async verifyOTP({ phone, otp }: { phone: string; otp: string }) {
+    return this.authService.verifyOTP(phone, otp);
   }
 }

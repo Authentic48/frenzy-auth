@@ -6,18 +6,19 @@ import { RMQModule } from 'nestjs-rmq';
 import { PrismaService } from './prisma/prisma.service';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { TwilioModule } from 'nestjs-twilio';
-import { getTwilioConfig } from './configs/twilio.config';
+import { ScheduleModule } from '@nestjs/schedule';
+// import { TwilioModule } from 'nestjs-twilio';
+// import { getTwilioConfig } from './configs/twilio.config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, validationSchema: configSchema }),
     RMQModule.forRootAsync(getRMQConfig()),
-    TwilioModule.forRootAsync(getTwilioConfig()),
+    ConfigModule.forRoot({ isGlobal: true, validationSchema: configSchema }),
+    ScheduleModule.forRoot(),
+    // TwilioModule.forRootAsync(getTwilioConfig()),
     UserModule,
     AuthModule,
   ],
-  controllers: [],
   providers: [PrismaService],
 })
 export class AppModule {}
