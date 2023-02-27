@@ -1,6 +1,8 @@
 import { JwtTokenTypes } from '../utils/enum';
 
 export interface IJWTPayload {
-  type: JwtTokenTypes;
+  type?: JwtTokenTypes;
   userUUID: string;
+
+  deviceUUID?: string;
 }

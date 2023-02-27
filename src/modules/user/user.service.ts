@@ -79,14 +79,12 @@ export class UserService implements IUserService {
     return {
       uuid: user.uuid,
       phone: user.phone,
-      password: user.otp.password,
+      password: user?.otp?.password,
       isPhoneVerified: user.isPhoneVerified,
     };
   }
 
-  async verifyUserPhoneAndDeleteOTP(
-    userUUID: string,
-  ): Promise<{ success: boolean | null }> {
+  async verifyUserPhoneAndDeleteOTP(userUUID: string): Promise<void> {
     try {
       await this.prisma.user.update({
         where: { uuid: userUUID },
@@ -98,7 +96,7 @@ export class UserService implements IUserService {
         },
       });
 
-      return { success: true };
+      this.logger.debug('user phone number verified');
     } catch (e) {
       this.logger.error(e);
       if (e instanceof PrismaClientKnownRequestError && e.code === 'P2025') {

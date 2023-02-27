@@ -1,5 +1,5 @@
 export interface IAuthService {
-  verifyOTP(phone: string, password: string);
+  verifyOTP(userUUID: string, password: number);
 
   register(phone: string);
 }

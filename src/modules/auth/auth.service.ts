@@ -6,7 +6,7 @@ import { ArgonService } from '../../libs/services/argon.service';
 import { UnAuthorizedException } from '../../libs/exceptions/un-authorized.exception';
 import { InternalJWTService } from './jwt/jwt.service';
 import { JwtTokenTypes } from '../../libs/utils/enum';
-
+import { OtpExperiedException } from '../../libs/exceptions/otp-experied.exception';
 // import { SendOtpService } from '../../libs/services/send-otp.service';
 
 @Injectable()
@@ -38,8 +38,6 @@ export class AuthService implements IAuthService {
 
     this.logger.debug(`otp successfully sent`);
 
-    console.log(this.configService.get('JWT_SECRET'));
-
     const veryOtpAccessToken = await this.jwt.generateToken(
       {
         userUUID,
@@ -53,20 +51,27 @@ export class AuthService implements IAuthService {
     };
   }
 
-  async verifyOTP(phone: string, otp: string) {
-    const user = await this.userService.findUserByUUID(phone);
+  async verifyOTP(userUUID: string, otp: number) {
+    const user = await this.userService.findUserByUUID(userUUID);
 
     if (!user) throw new UnAuthorizedException();
 
-    const isPasswordValid = await this.argon2.compare(user.password, otp);
+    if (!user.password) throw new OtpExperiedException();
+
+    const isPasswordValid = await this.argon2.compare(
+      user.password,
+      otp.toString(),
+    );
 
     if (!isPasswordValid) throw new UnAuthorizedException();
 
     if (!user.isPhoneVerified)
       await this.userService.verifyUserPhoneAndDeleteOTP(user.uuid);
 
-    // TODO generate pair of tokens
+    const { accessToken, refreshToken } = await this.jwt.generateTokenPair({
+      userUUID,
+    });
 
-    return { success: true };
+    return { accessToken, refreshToken };
   }
 }
