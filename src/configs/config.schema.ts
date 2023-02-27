@@ -9,4 +9,5 @@ export const configSchema = Joi.object({
   RMQ_PORT: Joi.number().required(),
   RMQ_PREFETCH_COUNT: Joi.number().required(),
   EXCHANGE: Joi.string().required(),
+  JWT_SECRET: Joi.string().required(),
 });

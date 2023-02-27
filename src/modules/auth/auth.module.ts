@@ -2,13 +2,21 @@ import { Module } from '@nestjs/common';
 import { AuthCommand } from './authCommand';
 import { AuthService } from './auth.service';
 import { UserModule } from '../user/user.module';
-// import { SendOtpService } from '../../libs/services/send-otp.service';
+import { SendOtpService } from '../../libs/services/send-otp.service';
 import { ArgonService } from '../../libs/services/argon.service';
-// import { TwilioService } from 'nestjs-twilio';
+import { TwilioModule } from 'nestjs-twilio';
+import { getTwilioConfig } from '../../configs/twilio.config';
+import { InternalJWTService } from './jwt/jwt.service';
+import { getJwtConfig } from '../../configs/jwt.config';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [UserModule],
+  imports: [
+    JwtModule.registerAsync(getJwtConfig()),
+    UserModule,
+    TwilioModule.forRootAsync(getTwilioConfig()),
+  ],
   controllers: [AuthCommand],
-  providers: [AuthService, ArgonService],
+  providers: [SendOtpService, InternalJWTService, AuthService, ArgonService],
 })
 export class AuthModule {}
