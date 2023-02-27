@@ -4,4 +4,6 @@ export interface IUser {
   password: string;
 
   uuid: string;
+
+  isPhoneVerified: boolean;
 }

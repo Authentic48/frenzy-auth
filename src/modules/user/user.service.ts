@@ -7,7 +7,7 @@ import { ArgonService } from '../../libs/services/argon.service';
 import { generateOTP } from '../../libs/helpers/otp-generater.helper';
 import { addMinutes } from '../../libs/helpers/add-minutes.helper';
 import { ConfigService } from '@nestjs/config';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { RMQInternalServerError } from '../../libs/exceptions/rmq-internal-server.exception';
 
 @Injectable()
@@ -21,13 +21,7 @@ export class UserService implements IUserService {
   ) {}
   async createUser(phone: string) {
     try {
-      const user = await this.findUserByPhone(phone);
-
-      if (user) {
-        throw new UserAlreadyExistException();
-      }
-
-      const oTP = generateOTP().toString();
+      const oTP = generateOTP();
 
       const newUser = await this.prisma.user.create({
         data: {
@@ -57,18 +51,23 @@ export class UserService implements IUserService {
         `New user successfully created, userUUID: ${newUser.uuid}, phone: ${phone} , password: ${oTP}`,
       );
 
-      return { success: true };
+      return { userUUID: newUser.uuid };
     } catch (e) {
-      this.logger.error('Failed to create new user', e.stack);
+      this.logger.error(e);
+      if (e instanceof PrismaClientKnownRequestError && e.code === 'P2002') {
+        throw new UserAlreadyExistException();
+      }
+      throw new RMQInternalServerError();
     }
   }
 
-  async findUserByPhone(phone: string) {
+  async findUserByUUID(uuid: string) {
     const user = await this.prisma.user.findUnique({
-      where: { phone },
+      where: { uuid },
       select: {
         uuid: true,
         phone: true,
+        isPhoneVerified: true,
         otp: {
           select: {
             password: true,
@@ -77,7 +76,12 @@ export class UserService implements IUserService {
       },
     });
 
-    return { uuid: user.uuid, phone: user.phone, password: user.otp.password };
+    return {
+      uuid: user.uuid,
+      phone: user.phone,
+      password: user.otp.password,
+      isPhoneVerified: user.isPhoneVerified,
+    };
   }
 
   async verifyUserPhoneAndDeleteOTP(
@@ -102,5 +106,11 @@ export class UserService implements IUserService {
       }
       throw new RMQInternalServerError();
     }
+  }
+
+  async findUserByPhone(phone: string) {
+    return this.prisma.user.findUnique({
+      where: { phone },
+    });
   }
 }

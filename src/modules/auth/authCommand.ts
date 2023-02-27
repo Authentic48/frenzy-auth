@@ -8,7 +8,7 @@ export class AuthCommand {
   constructor(private readonly authService: AuthService) {}
 
   @RMQRoute(AuthRouteTopics.REGISTER)
-  async register(phone: string): Promise<{ success: boolean | null }> {
+  async register(phone: string) {
     return this.authService.register(phone);
   }
 

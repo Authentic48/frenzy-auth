@@ -1,9 +1,11 @@
 import { IUser } from '../../libs/interfaces/user.interface';
 
 export interface IUserService {
-  createUser(phone: string): Promise<{ success: boolean | null }>;
+  createUser(phone: string): Promise<{ userUUID: string | null }>;
 
-  findUserByPhone(phone: string): Promise<IUser | null>;
+  findUserByUUID(uuid: string): Promise<IUser | null>;
+
+  findUserByPhone(uuid: string): Promise<object | null>;
 
   verifyUserPhoneAndDeleteOTP(
     userUUID: string,

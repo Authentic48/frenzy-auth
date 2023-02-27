@@ -1,62 +1,72 @@
-import {
-  HttpStatus,
-  Injectable,
-  Logger,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { IAuthService } from './auth';
-import { RMQError } from 'nestjs-rmq';
-import { ERROR_TYPE } from 'nestjs-rmq/dist/constants';
 import { ConfigService } from '@nestjs/config';
 import { ArgonService } from '../../libs/services/argon.service';
-// import { MessageNotSentException } from '../../libs/exceptions/message-not-sent.exception';
+import { UnAuthorizedException } from '../../libs/exceptions/un-authorized.exception';
+import { InternalJWTService } from './jwt/jwt.service';
+import { JwtTokenTypes } from '../../libs/utils/enum';
+
 // import { SendOtpService } from '../../libs/services/send-otp.service';
 
 @Injectable()
 export class AuthService implements IAuthService {
   private readonly logger: Logger = new Logger(AuthService.name);
+
+  private readonly VERIFY_OTP_ACCESS_TOKEN_LIFE_TIME: number;
+
   constructor(
     private readonly userService: UserService,
     // private readonly sendOtpService: SendOtpService,
     private readonly configService: ConfigService,
 
     private readonly argon2: ArgonService,
-  ) {}
+
+    private readonly jwt: InternalJWTService,
+  ) {
+    this.VERIFY_OTP_ACCESS_TOKEN_LIFE_TIME = parseInt(
+      this.configService.get('VERIFY_OTP_TOKEN_LIFE_TIME'),
+    );
+  }
 
   async register(phone: string) {
-    const { success } = await this.userService.createUser(phone);
-
-    if (!success)
-      throw new RMQError(
-        'auth.create_user_failed',
-        ERROR_TYPE.RMQ,
-        HttpStatus.EXPECTATION_FAILED,
-      );
+    const { userUUID } = await this.userService.createUser(phone);
 
     // TODO: enable twilio service
 
     // const message = await this.sendOtpService.sendOTP(phone);
-    //
-    // if (!message) throw new MessageNotSentException();
 
-    this.logger.debug(`otp successfully sent: `);
+    this.logger.debug(`otp successfully sent`);
 
-    return { success };
+    console.log(this.configService.get('JWT_SECRET'));
+
+    const veryOtpAccessToken = await this.jwt.generateToken(
+      {
+        userUUID,
+        type: JwtTokenTypes.VERIFY_OTP_ACCESS_TOKEN,
+      },
+      this.VERIFY_OTP_ACCESS_TOKEN_LIFE_TIME,
+    );
+
+    return {
+      accessToken: veryOtpAccessToken,
+    };
   }
 
   async verifyOTP(phone: string, otp: string) {
-    const user = await this.userService.findUserByPhone(phone);
+    const user = await this.userService.findUserByUUID(phone);
 
-    if (!user)
-      throw new UnauthorizedException('auth.invalid_code_or_phone_number');
+    if (!user) throw new UnAuthorizedException();
 
     const isPasswordValid = await this.argon2.compare(user.password, otp);
 
-    if (!isPasswordValid) throw new UnauthorizedException('auth.invalid_code');
+    if (!isPasswordValid) throw new UnAuthorizedException();
 
-    await this.userService.verifyUserPhoneAndDeleteOTP(user.uuid);
+    if (!user.isPhoneVerified)
+      await this.userService.verifyUserPhoneAndDeleteOTP(user.uuid);
 
     // TODO generate pair of tokens
+
+    return { success: true };
   }
 }
