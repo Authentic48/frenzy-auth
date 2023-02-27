@@ -28,7 +28,7 @@ model Otp {
   uuid      String   @id @default(uuid()) @db.VarChar(36)
   password  String
   userUUID  String   @unique @map("user_uuid") @db.VarChar(36)
-  user      User     @relation(fields: [userUUID], references: [uuid])
+  user      User     @relation(fields: [userUUID], references: [uuid], onDelete: Cascade)
   expiredAt DateTime @map("expired_at")
 
   @@map("otp")
@@ -38,7 +38,7 @@ model Role {
   uuid     String   @id @default(uuid()) @db.VarChar(36)
   name     RoleEnum @default(USER)
   userUUID String   @map("user_uuid") @db.VarChar(36)
-  user     User     @relation(fields: [userUUID], references: [uuid])
+  user     User     @relation(fields: [userUUID], references: [uuid], onDelete: Cascade)
 
   @@map("role")
 }
