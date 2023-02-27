@@ -1,5 +1,7 @@
-import crypto from 'crypto';
+import { randomInt } from 'crypto';
 
-export const generateOTP = (): number => {
-  return crypto.randomInt(5);
+export const generateOTP = () => {
+  const number = randomInt(10000, 99999);
+
+  return number.toString();
 };
