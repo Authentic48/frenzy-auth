@@ -1,6 +1,10 @@
 export enum AuthRouteTopics {
   REGISTER = 'auth.register.command',
   REGISTER_VERIFY_OTP = 'auth.verify-otp.command',
+
+  RE_SEND_OTP = 'auth.re-send-otp.command',
+
+  LOGIN = 'auth.login.command',
 }
 
 export enum JwtTokenTypes {

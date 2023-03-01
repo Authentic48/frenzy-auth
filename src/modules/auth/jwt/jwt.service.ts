@@ -16,24 +16,41 @@ export class InternalJWTService {
     return this.jwt.signAsync(payload, { expiresIn: lifeTime });
   }
 
-  async generateTokenPair(
-    payload: IJWTPayload,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  async generateTokenPair(payload: IJWTPayload): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    deviceUUID: string;
+    accessTokenUUID: string;
+  }> {
     const deviceUUID = randomUUID();
 
+    const accessTokenUUID = randomUUID();
+
     const accessToken = await this.generateToken(
-      { deviceUUID, type: JwtTokenTypes.ACCESS_TOKEN, ...payload },
+      {
+        deviceUUID,
+        accessTokenUUID,
+        type: JwtTokenTypes.ACCESS_TOKEN,
+        ...payload,
+      },
       parseInt(this.configService.get('ACCESS_TOKEN_LIFE_TIME')),
     );
 
     const refreshToken = await this.generateToken(
-      { deviceUUID, type: JwtTokenTypes.REFRESH_TOKEN, ...payload },
+      {
+        deviceUUID,
+        accessTokenUUID,
+        type: JwtTokenTypes.REFRESH_TOKEN,
+        ...payload,
+      },
       parseInt(this.configService.get('REFRESH_TOKEN_LIFE_TIME')),
     );
 
     return {
       accessToken,
       refreshToken,
+      deviceUUID,
+      accessTokenUUID,
     };
   }
 }

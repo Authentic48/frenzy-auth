@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { OtpService } from './otp.service';
+import { SessionService } from './session.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ArgonService } from '../../libs/services/argon.service';
 
 @Module({
-  providers: [OtpService, PrismaService, ArgonService],
-  exports: [OtpService],
+  providers: [SessionService, PrismaService, ArgonService],
+  exports: [SessionService],
 })
-export class OtpModule {}
+export class SessionModule {}

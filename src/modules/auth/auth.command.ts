@@ -16,4 +16,14 @@ export class AuthCommand {
   async verifyOTP({ userUUID, otp }: { userUUID: string; otp: number }) {
     return this.authService.verifyOTP(userUUID, otp);
   }
+
+  @RMQRoute(AuthRouteTopics.RE_SEND_OTP)
+  async reSendOTP({ userUUID }: { userUUID: string }) {
+    return this.authService.reSendOTP(userUUID);
+  }
+
+  @RMQRoute(AuthRouteTopics.LOGIN)
+  async login(phone: string) {
+    return this.authService.login(phone);
+  }
 }

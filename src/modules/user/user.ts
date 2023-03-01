@@ -1,7 +1,7 @@
 import { IUser } from '../../libs/interfaces/user.interface';
 
 export interface IUserService {
-  createUser(phone: string): Promise<{ userUUID: string | null }>;
+  createUser(phone: string): Promise<{ userUUID: string; otp: string }>;
 
   findUserByUUID(uuid: string): Promise<IUser | null>;
 
