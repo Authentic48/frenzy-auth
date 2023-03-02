@@ -63,7 +63,7 @@ export class OtpService implements IOtpService {
         this.logger.debug(
           `Trying to re-send OTP for a user that doesn't exist`,
         );
-        throw new UnAuthorizedException();
+        throw new UnAuthorizedException('auth.invalid_credentials');
       }
       throw new RMQInternalServerError();
     }

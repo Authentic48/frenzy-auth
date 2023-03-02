@@ -106,4 +106,36 @@ export class SessionService {
 
     return { accessExpiredAt, refreshExpiredAt };
   }
+
+  async deleteSession(deviceUUID: string): Promise<{ success: boolean }> {
+    await this.prisma.session.delete({
+      where: { deviceUUID },
+    });
+
+    return { success: true };
+  }
+
+  async verifySession(
+    deviceUUID: string,
+    userUUID: string,
+    accessTokenUUID: string,
+  ) {
+    const session = await this.prisma.session.findFirst({
+      where: { deviceUUID, userUUID },
+      select: {
+        tokens: {
+          select: {
+            accessTokenUUID: true,
+          },
+        },
+      },
+    });
+
+    if (!session || session.tokens[0].accessTokenUUID !== accessTokenUUID) {
+      this.logger.debug(`Invalid session access token!!`);
+      return { success: false };
+    }
+
+    return { success: true };
+  }
 }

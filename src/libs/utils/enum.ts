@@ -5,6 +5,10 @@ export enum AuthRouteTopics {
   RE_SEND_OTP = 'auth.re-send-otp.command',
 
   LOGIN = 'auth.login.command',
+
+  LOGOUT = 'auth.logout.command',
+
+  VERIFY_SESSION = 'auth.verify-session.query',
 }
 
 export enum JwtTokenTypes {

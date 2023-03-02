@@ -9,4 +9,6 @@ export interface IAuthService {
   reSendOTP(userUUID: string): Promise<{ success: boolean }>;
 
   login(phone: string): Promise<{ accessToken: string }>;
+
+  logout(deviceUUID: string): Promise<{ success: boolean }>;
 }

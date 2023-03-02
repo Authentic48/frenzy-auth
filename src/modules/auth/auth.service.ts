@@ -60,7 +60,7 @@ export class AuthService implements IAuthService {
   async verifyOTP(userUUID: string, otp: number) {
     const user = await this.userService.findUserByUUID(userUUID);
 
-    if (!user) throw new UnAuthorizedException();
+    if (!user) throw new UnAuthorizedException('auth.invalid_credentials');
 
     if (!user.password) throw new OtpExperiedException();
 
@@ -69,7 +69,8 @@ export class AuthService implements IAuthService {
       otp.toString(),
     );
 
-    if (!isPasswordValid) throw new UnAuthorizedException();
+    if (!isPasswordValid)
+      throw new UnAuthorizedException('auth.invalid_credentials');
 
     if (!user.isPhoneVerified)
       await this.userService.verifyUserPhoneAndDeleteOTP(user.uuid);
@@ -104,7 +105,7 @@ export class AuthService implements IAuthService {
   async login(phone: string) {
     const user = await this.userService.findUserByPhone(phone);
 
-    if (!user) throw new UnAuthorizedException();
+    if (!user) throw new UnAuthorizedException('auth.invalid_credentials');
 
     const { otp } = await this.otpService.createNewOTP(user.uuid);
 
@@ -123,5 +124,9 @@ export class AuthService implements IAuthService {
     return {
       accessToken,
     };
+  }
+
+  async logout(deviceUUID: string): Promise<{ success: boolean }> {
+    return await this.session.deleteSession(deviceUUID);
   }
 }

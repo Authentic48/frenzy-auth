@@ -96,6 +96,7 @@ export class UserService implements IUserService {
     } catch (e) {
       this.logger.error(e);
       if (e instanceof PrismaClientKnownRequestError && e.code === 'P2025') {
+        // TODO: Change Forbidden Exception to RMQ
         throw new ForbiddenException();
       }
       throw new RMQInternalServerError();

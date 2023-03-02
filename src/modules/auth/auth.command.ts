@@ -26,4 +26,9 @@ export class AuthCommand {
   async login(phone: string) {
     return this.authService.login(phone);
   }
+
+  @RMQRoute(AuthRouteTopics.LOGOUT)
+  async logout(deviceUUID: string) {
+    return this.authService.logout(deviceUUID);
+  }
 }

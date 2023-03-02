@@ -11,6 +11,7 @@ import { getJwtConfig } from '../../configs/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
 import { SessionModule } from '../session/session.module';
 import { OtpModule } from '../otp/otp.module';
+import { AuthQuery } from './auth.query';
 
 @Module({
   imports: [
@@ -19,8 +20,9 @@ import { OtpModule } from '../otp/otp.module';
     TwilioModule.forRootAsync(getTwilioConfig()),
     SessionModule,
     OtpModule,
+    AuthModule,
   ],
-  controllers: [AuthCommand],
+  controllers: [AuthCommand, AuthQuery],
   providers: [SendOtpService, InternalJWTService, AuthService, ArgonService],
 })
 export class AuthModule {}
