@@ -31,4 +31,17 @@ export class AuthCommand {
   async logout(deviceUUID: string) {
     return this.authService.logout(deviceUUID);
   }
+
+  @RMQRoute(AuthRouteTopics.REFRESH)
+  async refresh({
+    deviceUUID,
+    userUUID,
+    refreshToken,
+  }: {
+    deviceUUID: string;
+    userUUID: string;
+    refreshToken: string;
+  }) {
+    return this.authService.refresh(deviceUUID, userUUID, refreshToken);
+  }
 }

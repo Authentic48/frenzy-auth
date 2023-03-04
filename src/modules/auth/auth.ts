@@ -11,4 +11,10 @@ export interface IAuthService {
   login(phone: string): Promise<{ accessToken: string }>;
 
   logout(deviceUUID: string): Promise<{ success: boolean }>;
+
+  refresh(
+    deviceUUID: string,
+    userUUID: string,
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string }>;
 }

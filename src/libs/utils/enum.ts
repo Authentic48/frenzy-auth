@@ -9,6 +9,8 @@ export enum AuthRouteTopics {
   LOGOUT = 'auth.logout.command',
 
   VERIFY_SESSION = 'auth.verify-session.query',
+
+  REFRESH = 'auth.refresh.command',
 }
 
 export enum JwtTokenTypes {

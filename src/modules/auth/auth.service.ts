@@ -9,6 +9,8 @@ import { JwtTokenTypes } from '../../libs/utils/enum';
 import { OtpExperiedException } from '../../libs/exceptions/otp-experied.exception';
 import { SessionService } from '../session/session.service';
 import { OtpService } from '../otp/otp.service';
+import { SessionExpiredException } from '../../libs/exceptions/session-expired.exception';
+import { randomUUID } from 'crypto';
 // import { SendOtpService } from '../../libs/services/send-otp.service';
 
 @Injectable()
@@ -33,6 +35,43 @@ export class AuthService implements IAuthService {
     this.VERIFY_OTP_ACCESS_TOKEN_LIFE_TIME = parseInt(
       this.configService.get('VERIFY_OTP_TOKEN_LIFE_TIME'),
     );
+  }
+
+  async refresh(
+    deviceUUID: string,
+    userUUID: string,
+    incomingRefreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const { isRefreshTokenValid } =
+      await this.session.verifySessionRefreshToken(
+        incomingRefreshToken,
+        deviceUUID,
+        userUUID,
+      );
+
+    if (!isRefreshTokenValid) {
+      throw new SessionExpiredException();
+    }
+
+    const { accessToken, refreshToken, accessTokenUUID } =
+      await this.jwt.generateTokenPair(
+        {
+          userUUID,
+        },
+        deviceUUID,
+      );
+
+    await this.session.updateSession(
+      refreshToken,
+      deviceUUID,
+      userUUID,
+      accessTokenUUID,
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 
   async register(phone: string) {
@@ -73,14 +112,19 @@ export class AuthService implements IAuthService {
       throw new UnAuthorizedException('auth.invalid_credentials');
 
     if (!user.isPhoneVerified)
-      await this.userService.verifyUserPhoneAndDeleteOTP(user.uuid);
+      await this.userService.verifyUserPhone(user.uuid);
 
     await this.otpService.deleteOTP(user.uuid);
 
-    const { accessToken, refreshToken, accessTokenUUID, deviceUUID } =
-      await this.jwt.generateTokenPair({
-        userUUID,
-      });
+    const deviceUUID = randomUUID();
+
+    const { accessToken, refreshToken, accessTokenUUID } =
+      await this.jwt.generateTokenPair(
+        {
+          userUUID,
+        },
+        deviceUUID,
+      );
 
     await this.session.createSession(
       deviceUUID,

@@ -44,29 +44,26 @@ model Role {
 }
 
 model Session {
-  uuid         String               @id @default(uuid()) @db.VarChar(36)
-  user         User                 @relation(fields: [userUUID], references: [uuid], onDelete: Cascade)
-  userUUID     String               @map("user_uuid") @db.VarChar(36)
-  deviceUUID   String               @unique @map("device_uuid") @db.VarChar(36)
-  refreshToken String               @unique @map("refresh_token") @db.VarChar(200)
-  tokens       SessionAccessToken[]
-  createdAt    DateTime             @default(now()) @map("created_at")
-  updatedAt    DateTime             @updatedAt @map("updated_at")
-  expiredAt    DateTime             @map("expired_at")
+  uuid               String              @id @default(uuid()) @db.VarChar(36)
+  user               User                @relation(fields: [userUUID], references: [uuid], onDelete: Cascade)
+  userUUID           String              @map("user_uuid") @db.VarChar(36)
+  deviceUUID         String              @unique @map("device_uuid") @db.VarChar(36)
+  refreshToken       String              @unique @map("refresh_token") @db.VarChar(200)
+  sessionAccessToken SessionAccessToken?
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+  expiredAt          DateTime            @map("expired_at")
 
-  @@index([deviceUUID])
   @@map("session")
 }
 
 model SessionAccessToken {
-  uuid            String   @id @default(uuid()) @db.VarChar(36)
-  sessionUUID     String   @map("session_uuid") @db.VarChar(36)
-  session         Session  @relation(fields: [sessionUUID], references: [uuid], onDelete: Cascade)
-  accessTokenUUID String   @map("access_token_uuid") @db.VarChar(100)
+  accessTokenUUID String   @unique @map("access_token_uuid") @db.VarChar(100)
+  sessionUUID     String?  @unique @map("session_uuid") @db.VarChar(200)
+  session         Session? @relation(fields: [sessionUUID], references: [uuid], onDelete: Cascade)
   createdAt       DateTime @default(now()) @map("created_at")
   expiredAt       DateTime @map("expired_at")
 
-  @@index([accessTokenUUID, sessionUUID])
   @@map("session_access_token")
 }
 

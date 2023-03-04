@@ -80,15 +80,12 @@ export class UserService implements IUserService {
     };
   }
 
-  async verifyUserPhoneAndDeleteOTP(userUUID: string): Promise<void> {
+  async verifyUserPhone(userUUID: string): Promise<void> {
     try {
       await this.prisma.user.update({
         where: { uuid: userUUID },
         data: {
           isPhoneVerified: true,
-          otp: {
-            delete: true,
-          },
         },
       });
 

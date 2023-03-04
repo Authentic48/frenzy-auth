@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { IOtpService } from './otp';
 import { ConfigService } from '@nestjs/config';
 import { generateOTP } from '../../libs/helpers/otp-generater.helper';
@@ -19,19 +18,6 @@ export class OtpService implements IOtpService {
 
     private readonly argon2: ArgonService,
   ) {}
-
-  @Cron(CronExpression.EVERY_5_SECONDS)
-  async deleteExpiredOTP() {
-    await this.prisma.otp.deleteMany({
-      where: {
-        expiredAt: {
-          lte: new Date(),
-        },
-      },
-    });
-
-    this.logger.debug('Expired OTP deleted!!');
-  }
 
   async createNewOTP(userUUID: string) {
     try {
@@ -80,17 +66,26 @@ export class OtpService implements IOtpService {
 
     const expiredAt = addMinutes(
       new Date(),
-      this.configService.get('OTP_LIFE_TIME'),
+      parseInt(this.configService.get('OTP_LIFE_TIME')),
     );
 
     return { password, expiredAt, otp };
   }
 
   async deleteOTP(userUUID: string): Promise<void> {
-    await this.prisma.otp.delete({
-      where: { userUUID },
-    });
+    try {
+      await this.prisma.otp.delete({
+        where: { userUUID },
+      });
 
-    this.logger.debug(`OTP deleted after verification!!`);
+      this.logger.debug(`OTP deleted after verification!!`);
+    } catch (e) {
+      this.logger.error(e);
+      if (e instanceof PrismaClientKnownRequestError && e.code === 'P2025') {
+        this.logger.debug(`Trying to delete an expired OTP`);
+        throw new UnAuthorizedException('auth.otp_expired');
+      }
+      throw new RMQInternalServerError();
+    }
   }
 }

@@ -7,5 +7,5 @@ export interface IUserService {
 
   findUserByPhone(uuid: string): Promise<object | null>;
 
-  verifyUserPhoneAndDeleteOTP(userUUID: string): Promise<void>;
+  verifyUserPhone(userUUID: string): Promise<void>;
 }

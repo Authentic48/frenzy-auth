@@ -8,7 +8,7 @@ export class AuthQuery {
   constructor(private readonly session: SessionService) {}
 
   @RMQRoute(AuthRouteTopics.VERIFY_SESSION)
-  verifySession({
+  verifySessionAccessToken({
     accessTokenUUID,
     deviceUUID,
     userUUID,
@@ -17,6 +17,10 @@ export class AuthQuery {
     deviceUUID: string;
     userUUID: string;
   }) {
-    return this.session.verifySession(deviceUUID, userUUID, accessTokenUUID);
+    return this.session.verifySessionAccessToken(
+      deviceUUID,
+      userUUID,
+      accessTokenUUID,
+    );
   }
 }

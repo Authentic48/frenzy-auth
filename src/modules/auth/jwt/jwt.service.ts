@@ -16,14 +16,15 @@ export class InternalJWTService {
     return this.jwt.signAsync(payload, { expiresIn: lifeTime });
   }
 
-  async generateTokenPair(payload: IJWTPayload): Promise<{
+  async generateTokenPair(
+    payload: IJWTPayload,
+    deviceUUID: string,
+  ): Promise<{
     accessToken: string;
     refreshToken: string;
     deviceUUID: string;
     accessTokenUUID: string;
   }> {
-    const deviceUUID = randomUUID();
-
     const accessTokenUUID = randomUUID();
 
     const accessToken = await this.generateToken(

@@ -7,6 +7,7 @@ import { PrismaService } from './prisma/prisma.service';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AutoCleanerModule } from './modules/auto-cleaner/auto-cleaner.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     ScheduleModule.forRoot(),
     UserModule,
     AuthModule,
+    AutoCleanerModule,
   ],
   providers: [PrismaService],
 })
