@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IUserService } from './user';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserAlreadyExistException } from '../../libs/exceptions/user-already-exist.exception';
@@ -7,6 +7,9 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { RMQInternalServerError } from '../../libs/exceptions/rmq-internal-server.exception';
 import { OtpService } from '../otp/otp.service';
+import { ForbiddenException } from '../../libs/exceptions/forbidden.exception';
+import { IUserInfo } from '../../libs/interfaces/user-info.interface';
+import { NotFoundException } from '../../libs/exceptions/not-found.exception';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -93,7 +96,6 @@ export class UserService implements IUserService {
     } catch (e) {
       this.logger.error(e);
       if (e instanceof PrismaClientKnownRequestError && e.code === 'P2025') {
-        // TODO: Change Forbidden Exception to RMQ
         throw new ForbiddenException();
       }
       throw new RMQInternalServerError();
@@ -104,5 +106,38 @@ export class UserService implements IUserService {
     return this.prisma.user.findUnique({
       where: { phone },
     });
+  }
+
+  async getUserInfo(userUUID: string): Promise<IUserInfo | null> {
+    try {
+      const roles: string[] = [];
+      const userInfo = await this.prisma.user.findUniqueOrThrow({
+        where: {
+          uuid: userUUID,
+        },
+        select: {
+          uuid: true,
+          status: true,
+          roles: true,
+          isPhoneVerified: true,
+        },
+      });
+
+      userInfo.roles.map((role) => {
+        roles.push(role.name);
+      });
+
+      return {
+        userUUID: userInfo.uuid,
+        status: userInfo.status,
+        roles,
+        isPhoneVerified: userInfo.isPhoneVerified,
+      };
+    } catch (e) {
+      this.logger.error(e);
+      if (e instanceof PrismaClientKnownRequestError)
+        throw new NotFoundException();
+      throw new RMQInternalServerError();
+    }
   }
 }

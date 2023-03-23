@@ -2,8 +2,8 @@ import { HttpStatus } from '@nestjs/common';
 import { RMQError } from 'nestjs-rmq';
 import { ERROR_TYPE } from 'nestjs-rmq/dist/constants';
 
-export class OtpExpiredException extends RMQError {
+export class NotFoundException extends RMQError {
   constructor() {
-    super('auth.otp_expired', ERROR_TYPE.RMQ, HttpStatus.UNAUTHORIZED);
+    super('auth.not_found', ERROR_TYPE.RMQ, HttpStatus.NOT_FOUND);
   }
 }
