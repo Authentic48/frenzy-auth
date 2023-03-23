@@ -12,6 +12,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { SessionModule } from '../session/session.module';
 import { OtpModule } from '../otp/otp.module';
 import { AuthQuery } from './auth.query';
+import { RedisService } from '../../libs/services/redis.service';
 
 @Module({
   imports: [
@@ -23,6 +24,12 @@ import { AuthQuery } from './auth.query';
     AuthModule,
   ],
   controllers: [AuthCommand, AuthQuery],
-  providers: [SendOtpService, InternalJWTService, AuthService, ArgonService],
+  providers: [
+    SendOtpService,
+    InternalJWTService,
+    AuthService,
+    ArgonService,
+    RedisService,
+  ],
 })
 export class AuthModule {}

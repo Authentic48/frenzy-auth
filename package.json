@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@hapi/joi": "^17.1.1",
+    "@liaoliaots/nestjs-redis": "^9.0.5",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
@@ -32,6 +33,7 @@
     "@prisma/client": "^4.10.1",
     "@types/cron": "^2.0.0",
     "argon2": "^0.30.3",
+    "ioredis": "^5.3.1",
     "nestjs-rmq": "^2.8.0",
     "nestjs-twilio": "^4.1.1",
     "prisma": "^4.10.1",

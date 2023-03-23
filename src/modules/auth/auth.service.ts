@@ -11,6 +11,7 @@ import { SessionService } from '../session/session.service';
 import { OtpService } from '../otp/otp.service';
 import { SessionExpiredException } from '../../libs/exceptions/session-expired.exception';
 import { randomUUID } from 'crypto';
+import { RedisService } from '../../libs/services/redis.service';
 // import { SendOtpService } from '../../libs/services/send-otp.service';
 
 @Injectable()
@@ -31,6 +32,8 @@ export class AuthService implements IAuthService {
     private readonly session: SessionService,
 
     private readonly otpService: OtpService,
+
+    private readonly redis: RedisService,
   ) {
     this.VERIFY_OTP_ACCESS_TOKEN_LIFE_TIME = parseInt(
       this.configService.get('VERIFY_OTP_TOKEN_LIFE_TIME'),
@@ -91,6 +94,8 @@ export class AuthService implements IAuthService {
       this.VERIFY_OTP_ACCESS_TOKEN_LIFE_TIME,
     );
 
+    await this.redis.set(userUUID, accessToken);
+
     return {
       accessToken,
     };
@@ -115,6 +120,8 @@ export class AuthService implements IAuthService {
       await this.userService.verifyUserPhone(user.uuid);
 
     await this.otpService.deleteOTP(user.uuid);
+
+    await this.redis.delete(userUUID);
 
     const deviceUUID = randomUUID();
 
@@ -164,6 +171,8 @@ export class AuthService implements IAuthService {
       },
       this.VERIFY_OTP_ACCESS_TOKEN_LIFE_TIME,
     );
+
+    await this.redis.set(user.uuid, accessToken);
 
     return {
       accessToken,
