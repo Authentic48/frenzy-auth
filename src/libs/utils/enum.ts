@@ -11,6 +11,8 @@ export enum AuthRouteTopics {
   VERIFY_SESSION = 'auth.verify-session.query',
 
   REFRESH = 'auth.refresh.command',
+
+  GET_USER_INFO = 'auth.get-user-info.query',
 }
 
 export enum JwtTokenTypes {

@@ -6,7 +6,7 @@ import { ArgonService } from '../../libs/services/argon.service';
 import { UnAuthorizedException } from '../../libs/exceptions/un-authorized.exception';
 import { InternalJWTService } from './jwt/jwt.service';
 import { JwtTokenTypes } from '../../libs/utils/enum';
-import { OtpExperiedException } from '../../libs/exceptions/otp-experied.exception';
+import { OtpExpiredException } from '../../libs/exceptions/otp-experied.exception';
 import { SessionService } from '../session/session.service';
 import { OtpService } from '../otp/otp.service';
 import { SessionExpiredException } from '../../libs/exceptions/session-expired.exception';
@@ -106,7 +106,7 @@ export class AuthService implements IAuthService {
 
     if (!user) throw new UnAuthorizedException('auth.invalid_credentials');
 
-    if (!user.password) throw new OtpExperiedException();
+    if (!user.password) throw new OtpExpiredException();
 
     const isPasswordValid = await this.argon2.compare(
       user.password,
