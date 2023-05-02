@@ -1,7 +1,7 @@
 import { SessionService } from '../session/session.service';
 import { Controller } from '@nestjs/common';
 import { RMQRoute } from 'nestjs-rmq';
-import { AuthRouteTopics } from '../../libs/utils/enum';
+import { AuthRouteTopics } from '@tintok/tintok-common';
 
 @Controller()
 export class AuthQuery {

@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { ArgonService } from '../../libs/services/argon.service';
 import { UnAuthorizedException } from '../../libs/exceptions/un-authorized.exception';
 import { InternalJWTService } from './jwt/jwt.service';
-import { JwtTokenTypes } from '../../libs/utils/enum';
+import { JwtTokenTypes } from '@tintok/tintok-common';
 import { OtpExpiredException } from '../../libs/exceptions/otp-experied.exception';
 import { SessionService } from '../session/session.service';
 import { OtpService } from '../otp/otp.service';

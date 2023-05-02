@@ -5,11 +5,12 @@ import { UserAlreadyExistException } from '../../libs/exceptions/user-already-ex
 import { RoleEnum } from '@prisma/client';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { RMQInternalServerError } from '../../libs/exceptions/rmq-internal-server.exception';
+import { RMQInternalServerError } from '@tintok/tintok-common';
 import { OtpService } from '../otp/otp.service';
-import { ForbiddenException } from '../../libs/exceptions/forbidden.exception';
-import { IUserInfo } from '../../libs/interfaces/user-info.interface';
-import { NotFoundException } from '../../libs/exceptions/not-found.exception';
+import { ForbiddenException } from '@tintok/tintok-common';
+import { IUserInfo } from '@tintok/tintok-common';
+import { NotFoundException } from '@tintok/tintok-common';
+import { mapUserStatus } from '../../libs/helpers/user-status-mapper.helper';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -56,7 +57,7 @@ export class UserService implements IUserService {
       if (e instanceof PrismaClientKnownRequestError && e.code === 'P2002') {
         throw new UserAlreadyExistException();
       }
-      throw new RMQInternalServerError();
+      throw new RMQInternalServerError('auth');
     }
   }
 
@@ -96,9 +97,9 @@ export class UserService implements IUserService {
     } catch (e) {
       this.logger.error(e);
       if (e instanceof PrismaClientKnownRequestError && e.code === 'P2025') {
-        throw new ForbiddenException();
+        throw new ForbiddenException('auth');
       }
-      throw new RMQInternalServerError();
+      throw new RMQInternalServerError('auth');
     }
   }
 
@@ -129,15 +130,15 @@ export class UserService implements IUserService {
 
       return {
         userUUID: userInfo.uuid,
-        status: userInfo.status,
+        status: mapUserStatus(userInfo.status),
         roles,
         isPhoneVerified: userInfo.isPhoneVerified,
       };
     } catch (e) {
       this.logger.error(e);
       if (e instanceof PrismaClientKnownRequestError)
-        throw new NotFoundException();
-      throw new RMQInternalServerError();
+        throw new NotFoundException('auth');
+      throw new RMQInternalServerError('auth');
     }
   }
 }

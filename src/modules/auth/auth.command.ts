@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RMQRoute } from 'nestjs-rmq';
-import { AuthRouteTopics } from '../../libs/utils/enum';
+import { AuthRouteTopics } from '@tintok/tintok-common';
 
 @Controller()
 export class AuthCommand {
