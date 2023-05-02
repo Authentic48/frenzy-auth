@@ -1,8 +1,8 @@
 import { Controller } from '@nestjs/common';
 import { UserService } from './user.service';
-import { IUserInfo } from '../../libs/interfaces/user-info.interface';
+import { IUserInfo } from '@tintok/tintok-common';
 import { RMQRoute } from 'nestjs-rmq';
-import { AuthRouteTopics } from '../../libs/utils/enum';
+import { AuthRouteTopics } from '@tintok/tintok-common';
 
 @Controller()
 export class UserQuery {

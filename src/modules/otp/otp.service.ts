@@ -7,8 +7,7 @@ import { addMinutes } from '../../libs/helpers/add-minutes.helper';
 import { ArgonService } from '../../libs/services/argon.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { UnAuthorizedException } from '../../libs/exceptions/un-authorized.exception';
-import { RMQInternalServerError } from '../../libs/exceptions/rmq-internal-server.exception';
-
+import { RMQInternalServerError } from '@tintok/tintok-common';
 @Injectable()
 export class OtpService implements IOtpService {
   private readonly logger: Logger = new Logger(OtpService.name);
@@ -51,7 +50,7 @@ export class OtpService implements IOtpService {
         );
         throw new UnAuthorizedException('auth.invalid_credentials');
       }
-      throw new RMQInternalServerError();
+      throw new RMQInternalServerError('auth');
     }
   }
 
@@ -85,7 +84,7 @@ export class OtpService implements IOtpService {
         this.logger.debug(`Trying to delete an expired OTP`);
         throw new UnAuthorizedException('auth.otp_expired');
       }
-      throw new RMQInternalServerError();
+      throw new RMQInternalServerError('auth');
     }
   }
 }

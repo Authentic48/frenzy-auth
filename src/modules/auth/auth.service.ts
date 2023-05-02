@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { ArgonService } from '../../libs/services/argon.service';
 import { UnAuthorizedException } from '../../libs/exceptions/un-authorized.exception';
 import { InternalJWTService } from './jwt/jwt.service';
-import { JwtTokenTypes } from '../../libs/utils/enum';
+import { JwtTokenTypes } from '@tintok/tintok-common';
 import { OtpExpiredException } from '../../libs/exceptions/otp-experied.exception';
 import { SessionService } from '../session/session.service';
 import { OtpService } from '../otp/otp.service';
@@ -86,7 +86,7 @@ export class AuthService implements IAuthService {
 
     this.logger.debug(`otp successfully sent: ${otp}`);
 
-    const accessToken = await this.jwt.generateToken(
+    const verifyOTPToken = await this.jwt.generateToken(
       {
         userUUID,
         type: JwtTokenTypes.VERIFY_OTP_ACCESS_TOKEN,
@@ -94,10 +94,10 @@ export class AuthService implements IAuthService {
       this.VERIFY_OTP_ACCESS_TOKEN_LIFE_TIME,
     );
 
-    await this.redis.set(userUUID, accessToken);
+    await this.redis.set(userUUID, verifyOTPToken);
 
     return {
-      accessToken,
+      verifyOTPToken,
     };
   }
 
@@ -164,7 +164,7 @@ export class AuthService implements IAuthService {
 
     this.logger.debug(`otp sent successfully: ${otp}`);
 
-    const accessToken = await this.jwt.generateToken(
+    const verifyOTPToken = await this.jwt.generateToken(
       {
         userUUID: user.uuid,
         type: JwtTokenTypes.VERIFY_OTP_ACCESS_TOKEN,
@@ -172,10 +172,10 @@ export class AuthService implements IAuthService {
       this.VERIFY_OTP_ACCESS_TOKEN_LIFE_TIME,
     );
 
-    await this.redis.set(user.uuid, accessToken);
+    await this.redis.set(user.uuid, verifyOTPToken);
 
     return {
-      accessToken,
+      verifyOTPToken,
     };
   }
 
