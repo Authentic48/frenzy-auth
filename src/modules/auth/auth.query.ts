@@ -1,13 +1,13 @@
 import { SessionService } from '../session/session.service';
 import { Controller } from '@nestjs/common';
 import { RMQRoute } from 'nestjs-rmq';
-import { AuthRouteTopics } from '@tintok/tintok-common';
+import { EAuthRouteTopics } from '@tintok/tintok-common';
 
 @Controller()
 export class AuthQuery {
   constructor(private readonly session: SessionService) {}
 
-  @RMQRoute(AuthRouteTopics.VERIFY_SESSION)
+  @RMQRoute(EAuthRouteTopics.VERIFY_SESSION)
   verifySessionAccessToken({
     accessTokenUUID,
     deviceUUID,
